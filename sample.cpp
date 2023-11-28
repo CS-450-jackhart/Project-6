@@ -178,7 +178,7 @@ const int MS_PER_CYCLE = 10000;		// 10000 milliseconds = 10 seconds
 int		ActiveButton;			// current button that is down
 GLuint	AxesList;				// list to hold the axes
 int		AxesOn;					// != 0 means to draw the axes
-GLuint	BoxList;				// object display list
+GLuint	SphereList;				// object display list
 int		DebugOn;				// != 0 means to print debugging info
 int		DepthCueOn;				// != 0 means to use intensity depth cueing
 int		DepthBufferOn;			// != 0 means to use the z-buffer
@@ -271,15 +271,21 @@ MulArray3(float factor, float a, float b, float c )
 // these are here for when you need them -- just uncomment the ones you need:
 
 //#include "setmaterial.cpp"
-//#include "setlight.cpp"
-//#include "osusphere.cpp"
+#include "setlight.cpp"
+#include "osusphere.cpp"
 //#include "osucone.cpp"
 //#include "osutorus.cpp"
 //#include "bmptotexture.cpp"
 //#include "loadobjfile.cpp"
-//#include "keytime.cpp"
-//#include "glslprogram.cpp"
+#include "keytime.cpp"
+#include "glslprogram.cpp"
 
+Keytimes	Sc, Tc;
+
+// Shader globals
+GLSLProgram	Pattern;
+
+#define MS_IN_THE_ANIMATION_CYCLE	1000
 
 // main program:
 
@@ -335,8 +341,8 @@ Animate( )
 	// put animation stuff in here -- change some global variables for Display( ) to find:
 
 	int ms = glutGet(GLUT_ELAPSED_TIME);
-	ms %= MS_PER_CYCLE;							// makes the value of ms between 0 and MS_PER_CYCLE-1
-	Time = (float)ms / (float)MS_PER_CYCLE;		// makes the value of Time between 0. and slightly less than 1.
+	ms %= MS_IN_THE_ANIMATION_CYCLE;					// makes the value of ms between 0 and MS_PER_CYCLE-1
+	Time = (float)ms / (float)MS_IN_THE_ANIMATION_CYCLE;	// makes the value of Time between 0. and slightly less than 1.
 
 	// for example, if you wanted to spin an object in Display( ), you might call: glRotatef( 360.f*Time,   0., 1., 0. );
 
@@ -430,6 +436,12 @@ Display( )
 		glDisable( GL_FOG );
 	}
 
+	glEnable(GL_LIGHTING);
+
+	SetPointLight(GL_LIGHT0, 0, 2, 0, 255, 255, 255);
+
+	glEnable(GL_LIGHT0);
+
 	// possibly draw the axes:
 
 	if( AxesOn != 0 )
@@ -442,10 +454,30 @@ Display( )
 
 	glEnable( GL_NORMALIZE );
 
+	Pattern.Use();
 
-	// draw the box object by calling up its display list:
+	float sc, tc, rs, rt;
 
-	glCallList( BoxList );
+	if (true) { // put KeyTimePatternOn here
+		sc = Sc.GetValue(Time);
+		tc = Tc.GetValue(Time);
+	}
+
+	if (true) { // put TimePatternOn here
+		rs = sin(Time);
+		rt = cos(Time);
+	}
+
+	Pattern.SetUniformVariable("uSc", sc);
+	Pattern.SetUniformVariable("uTc", tc);
+	Pattern.SetUniformVariable("uRs", rs);
+	Pattern.SetUniformVariable("uRt", rt);
+
+	glCallList( SphereList );
+
+	Pattern.UnUse();
+
+	glDisable(GL_LIGHTING);
 
 #ifdef DEMO_Z_FIGHTING
 	if( DepthFightingOn != 0 )
@@ -804,6 +836,29 @@ InitGraphics( )
 
 	// all other setups go here, such as GLSLProgram and KeyTime setups:
 
+	Pattern.Init();
+	bool valid = Pattern.Create("pattern.vert", "pattern.frag");
+	if (!valid) {
+		fprintf(stderr, "Shader did not compile!\n");
+	}
+	else {
+		fprintf(stderr, "Shader compiled.\n");
+	}
+
+	Sc.Init();
+	Tc.Init();
+
+	Sc.AddTimeValue(0., 0.000);
+	Sc.AddTimeValue(0.5, 0.25);
+	Sc.AddTimeValue(1., 0.5);
+	Sc.AddTimeValue(0.5, 0.75);
+	Sc.AddTimeValue(0., 1.);
+
+	Tc.AddTimeValue(1., 0.000);
+	Tc.AddTimeValue(0.5, 0.25);
+	Tc.AddTimeValue(0., 0.5);
+	Tc.AddTimeValue(0.5, 0.75);
+	Tc.AddTimeValue(1., 1.);
 }
 
 
@@ -825,55 +880,9 @@ InitLists( )
 
 	// create the object:
 
-	BoxList = glGenLists( 1 );
-	glNewList( BoxList, GL_COMPILE );
-
-		glBegin( GL_QUADS );
-
-			glColor3f( 1., 0., 0. );
-
-				glNormal3f( 1., 0., 0. );
-					glVertex3f(  dx, -dy,  dz );
-					glVertex3f(  dx, -dy, -dz );
-					glVertex3f(  dx,  dy, -dz );
-					glVertex3f(  dx,  dy,  dz );
-
-				glNormal3f(-1., 0., 0.);
-					glVertex3f( -dx, -dy,  dz);
-					glVertex3f( -dx,  dy,  dz );
-					glVertex3f( -dx,  dy, -dz );
-					glVertex3f( -dx, -dy, -dz );
-
-			glColor3f( 0., 1., 0. );
-
-				glNormal3f(0., 1., 0.);
-					glVertex3f( -dx,  dy,  dz );
-					glVertex3f(  dx,  dy,  dz );
-					glVertex3f(  dx,  dy, -dz );
-					glVertex3f( -dx,  dy, -dz );
-
-				glNormal3f(0., -1., 0.);
-					glVertex3f( -dx, -dy,  dz);
-					glVertex3f( -dx, -dy, -dz );
-					glVertex3f(  dx, -dy, -dz );
-					glVertex3f(  dx, -dy,  dz );
-
-			glColor3f(0., 0., 1.);
-
-				glNormal3f(0., 0., 1.);
-					glVertex3f(-dx, -dy, dz);
-					glVertex3f( dx, -dy, dz);
-					glVertex3f( dx,  dy, dz);
-					glVertex3f(-dx,  dy, dz);
-
-				glNormal3f(0., 0., -1.);
-					glVertex3f(-dx, -dy, -dz);
-					glVertex3f(-dx,  dy, -dz);
-					glVertex3f( dx,  dy, -dz);
-					glVertex3f( dx, -dy, -dz);
-
-		glEnd( );
-
+	SphereList = glGenLists( 1 );
+	glNewList( SphereList, GL_COMPILE );
+		OsuSphere(1, 100, 100);
 	glEndList( );
 
 
