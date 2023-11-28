@@ -1,3 +1,9 @@
 
-0(12) : error C1503: undefined variable "LIGHTPOSITION"
+0(1) : error C0205: invalid profile "compatability"
+0(17) : error C7616: global variable gl_MultiTexCoord0 is removed after version 140
+0(18) : error C7616: global variable gl_ModelViewMatrix is removed after version 140
+0(18) : error C7616: global variable gl_Vertex is removed after version 140
+0(19) : error C7616: global variable gl_NormalMatrix is removed after version 140
+0(19) : error C7616: global variable gl_Normal is removed after version 140
+0(24) : error C7616: global variable gl_ModelViewProjectionMatrix is removed after version 140
 

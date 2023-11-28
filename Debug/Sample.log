@@ -1,5 +1,5 @@
 ﻿  sample.cpp
-C:\Users\jackh\Documents\School\CS 450\Project-6\sample.cpp(467,11): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\jackh\Documents\School\CS 450\Project-6\sample.cpp(468,11): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\jackh\Documents\School\CS 450\Project-6\sample.cpp(403,11): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\jackh\Documents\School\CS 450\Project-6\sample.cpp(404,11): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
 sample.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/INCREMENTAL:NO' specification
   Sample.vcxproj -> C:\Users\jackh\Documents\School\CS 450\Project-6\Debug\Sample.exe
