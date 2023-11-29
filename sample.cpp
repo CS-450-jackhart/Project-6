@@ -156,6 +156,8 @@ int		Xmouse, Ymouse;			// mouse values
 float	Xrot, Yrot;				// rotation angles in degrees
 
 int		SphereList;
+bool		KeyTimePattern;
+bool		TimePattern;
 
 
 // function prototypes:
@@ -257,6 +259,9 @@ main(int argc, char* argv[])
 
 	fprintf(stderr, "Starting.\n");
 	glutInit(&argc, argv);
+
+	KeyTimePattern = true;
+	TimePattern = true;
 
 	// setup all the graphics stuff:
 
@@ -394,14 +399,22 @@ Display()
 
 	float sc, tc, rs, rt;
 
-	if (true) { // put KeyTimePatternOn here
+	if (KeyTimePattern) {
 		sc = Sc.GetValue(Time);
 		tc = Tc.GetValue(Time);
 	}
+	else {
+		sc = 0;
+		tc = 0;
+	}
 
-	if (true) { // put TimePatternOn here
+	if (TimePattern) {
 		rs = sin(Time);
-		rt = cos(Time);
+		rt = sin(Time);
+	}
+	else {
+		rs = 0.2;
+		rt = 0.2;
 	}
 
 	Pattern.SetUniformVariable("uSc", sc);
@@ -731,15 +744,15 @@ InitGraphics()
 	Tc.Init();
 
 	Sc.AddTimeValue(0., 0.000);
-	Sc.AddTimeValue(0.5, 0.25);
-	Sc.AddTimeValue(1., 0.5);
-	Sc.AddTimeValue(0.5, 0.75);
-	Sc.AddTimeValue(0., 1.);
+	Sc.AddTimeValue(0.25, 0.5);
+	Sc.AddTimeValue(0.5, 1.);
+	Sc.AddTimeValue(0.75, 0.5);
+	Sc.AddTimeValue(1., 0.);
 
-	Tc.AddTimeValue(1., 0.000);
-	Tc.AddTimeValue(0.5, 0.25);
-	Tc.AddTimeValue(0., 0.5);
-	Tc.AddTimeValue(0.5, 0.75);
+	Tc.AddTimeValue(0., 1.);
+	Tc.AddTimeValue(0.25, 0.5);
+	Tc.AddTimeValue(0.5, 0.);
+	Tc.AddTimeValue(0.75, 0.5);
 	Tc.AddTimeValue(1., 1.);
 }
 
@@ -803,6 +816,16 @@ Keyboard(unsigned char c, int x, int y)
 	case 'p':
 	case 'P':
 		NowProjection = PERSP;
+		break;
+
+	case 'k':
+	case 'K':
+		KeyTimePattern = !KeyTimePattern;
+		break;
+
+	case 't':
+	case 'T':
+		TimePattern = !TimePattern;
 		break;
 
 	case 'q':
